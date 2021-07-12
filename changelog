@@ -3,3 +3,7 @@ GNU General Public Licence 3.0 - http://www.gnu.de/documents/gpl-3.0.en.html
 ---------------------
 
 v.1.0
+
+v.1.1
+- No more need to load jQuery with external ressources
+- Turning cursor while loading

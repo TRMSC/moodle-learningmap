@@ -7,3 +7,6 @@ v.1.0
 v.1.1
 - No more need to load jQuery with external ressources
 - Turning cursor while loading
+
+v.1.2
+- Notice at the end of the file for loading new pictures

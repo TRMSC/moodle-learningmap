@@ -1,225 +1,209 @@
-<!-- Learningmap v.1.2 - Copyright (C) 2021, TRMSC - https://trmsc1.wordpress.com/ -->
+<!-- Learningmap v.1.3 - Copyright (C) 2021, TRMSC - https://trmsc1.wordpress.com/ -->
 <!-- GNU General Public Licence 3.0 - http://www.gnu.de/documents/gpl-3.0.en.html -->
 <!-- CODE FOR AN AUTOMATED LEARNINGMAP DEPENDING ON THE CHECKLIST-PROGRESS  -->
 
+<!-- J A V A S C R I P T - P A R T -->
 <script>
-  window.onload = function() {
-    jquery_load_check_interval = setInterval(function() {
-      if (window.jQuery) {
-        lernlandkarte();
-        console.log("jQuery geladen ...");
-        console.log($.fn.jquery); // <== jquery basierte function
-        clearInterval(jquery_load_check_interval);
-      } else {
-        console.log("neuer Versuch jQuery zu laden ...");
-      }
-    }, 150);
+    window.onload = function() {
+        jquery_load_check_interval = setInterval(function() {
+            if (window.jQuery) {
+                learningmap();
+                console.log("jquery successfully loaded...");
+                console.log($.fn.jquery);
+                clearInterval(jquery_load_check_interval);
+            } else {
+                console.log("new try to load jquery...");
+            }
+        }, 150);
 
-    function lernlandkarte() {
-      $("#gesamteAnzeige").css("cursor", "auto");
-      var roundUp = 0;
-      fortschritt = Math.ceil(
-        parseFloat(
-          $(".checklist_progress_inner")
-            .css("width")
-            .replace("%", "")
-            .replace(",", ".")
-        )
-      );
-      if (fortschritt == 0) {
-        $("#abdecken").css({
-          "border-radius": "15px"
-        });
-      } else {
-        roundUp = 0.5;
-      }
-      finish = parseFloat(
-        $(".checklist_progress_outer")
-          .css("width")
-          .replace("%", "")
-          .replace(",", ".")
-      );
-      path = Math.ceil(roundUp + fortschritt / (finish / 100));
-      if (path > 100) {
-        path = 100;
-      }
-      $("#abdecken").css({
-        "margin-left": path + "%"
-      });
-      $("#abdecken").css({
-        width: 100 - path + "%"
-      });
+        function learningmap() {
+            /* Get information from the checklist */
+            checklistFinish = parseFloat(
+                $(".checklist_progress_outer")
+                .css("width")
+                .replace("%", "")
+                .replace(",", ".")
+            );
+            checklistProgress = Math.ceil(
+                parseFloat(
+                    $(".checklist_progress_inner")
+                    .css("width")
+                    .replace("%", "")
+                    .replace(",", ".")
+                )
+            );
+            
+            /* Use checklistRoundup to exclude a result of eg 99%; Change border-radius if progress > o */
+            var checklistRoundup = 0; 
+            if (checklistProgress > 0) {
+                checklistRoundup = 0.5;
+                $("#mapCover").css({
+                    "border-radius": "0px 15px 15px 0px"
+                });
+            }
+            
+            /* Calculate the state */
+            checklistState = Math.ceil(checklistRoundup + checklistProgress / (checklistFinish / 100));
+            if (checklistState > 100) {
+                checklistState = 100;
+            }
+            
+            /* Cover the map depending on the state */
+            $("#mapCover").css({
+                "margin-left": checklistState + "%"
+            });
+            $("#mapCover").css({
+                width: 100 - checklistState + "%"
+            }); 
+            
+            /* Points */
+            let mapPointsValue = Math.round(checklistState);
+            $("#mapPoints").html(mapPointsValue);
+            
+            /* Emblem */
+            switch (true) {
+                case mapPointsValue >= 0 && mapPointsValue < 33:
+                    $("#mapEmblem").addClass("fa-compass");
+                    break;
+                case mapPointsValue >= 33 && mapPointsValue < 66:
+                    $("#mapEmblem").addClass("fa-flask");
+                    break;
+                case mapPointsValue >= 66 && mapPointsValue < 100:
+                    $("#mapEmblem").addClass("fa-magic");
+                    break;
+                case mapPointsValue == 100:
+                    $("#mapEmblem").addClass("fa-diamond");
+                    break;
+            }      
+            
+            /* Stars */
+            switch (true) {
+                case mapPointsValue == 0:
+                    $("#mapStars").html("0");
+                    break;
+                case mapPointsValue > 0 && mapPointsValue < 25:
+                    $("#mapStars").html("1");
+                    break;
+                case mapPointsValue >= 25 && mapPointsValue < 50:
+                    $("#mapStars").html("2");
+                    break;
+                case mapPointsValue >= 50 && mapPointsValue < 75:
+                    $("#mapStars").html("3");
+                    break;
+                case mapPointsValue >= 75 && mapPointsValue < 100:
+                    $("#mapStars").html("4");
+                    break;
+                case mapPointsValue == 100:
+                    $("#mapStars").html("5");
+                    break;
+            }
+            
+            /* Days */
+            var mapDateValue = new Date();
+            var mapTodayValue = mapDateValue.getDay();
+            if (mapTodayValue == 0) {
+                mapTodayValue = 7;
+            }
+            $("#mapToday").html(mapTodayValue);
+            if (mapTodayValue > 5) {
+                mapTodayValue = 5;
+            }
+            var mapLeftdaysValue = 5 - mapTodayValue;
+            if (mapLeftdaysValue == 1) {
+                $("#mapLeftdays").html(mapLeftdaysValue + " Tag");
+            } else {
+                $("#mapLeftdays").html(mapLeftdaysValue + " Tage");
+            }
 
-      let points = Math.round(path);
-      $("#pointSpn").html(points);
-
-      switch (true) {
-        case points >= 0 && points < 33:
-          $("#artefact").addClass("fa-compass");
-          break;
-        case points >= 33 && points < 66:
-          $("#artefact").addClass("fa-flask");
-          break;
-        case points >= 66 && points < 100:
-          $("#artefact").addClass("fa-magic");
-          break;
-        case points == 100:
-          $("#artefact").addClass("fa-diamond");
-          break;
-      }
-
-      switch (true) {
-        case points == 0:
-          $("#starSpn").html("0");
-          break;
-        case points > 0 && points < 25:
-          $("#starSpn").html("1");
-          break;
-        case points >= 25 && points < 50:
-          $("#starSpn").html("2");
-          break;
-        case points >= 50 && points < 75:
-          $("#starSpn").html("3");
-          break;
-        case points >= 75 && points < 100:
-          $("#starSpn").html("4");
-          break;
-        case points == 100:
-          $("#starSpn").html("5");
-          break;
-      }
-
-      var now = new Date();
-      var nowDay = now.getDay();
-      if (nowDay == 0) {
-        nowDay = 7;
-      }
-      $("#daySpn").html(nowDay);
-
-      if (nowDay > 5) {
-        nowDay = 5;
-      }
-      var leftDay = 5 - nowDay;
-      if (leftDay == 1) {
-        $("#leftSpn").html(leftDay + " Tag");
-      } else {
-        $("#leftSpn").html(leftDay + " Tage");
-      }
-
-      chart = points / nowDay;
-      if ((chart >= 20) & (chart < 100)) {
-        $("#chartSpn").html("Weiter so!");
-      }
-      if ((chart < 20) & (nowDay < 5)) {
-        $("#chartSpn").html("Halte dich ran!");
-      }
-      if ((points < 100) & (nowDay == 5)) {
-        $("#chartSpn").html("Letzte Chance!");
-      }
-      if (points >= 100) {
-        $("#chartSpn").html("Starke Leistung!");
-      }
-    }
-  };
+            /* Chart */
+            mapChartValue = mapPointsValue / mapTodayValue;
+            switch (true) {
+                case mapChartValue >= 20 && mapChartValue < 100:
+                    $("#mapChart").html("Weiter so!");
+                    break;
+                case mapChartValue < 20 && mapTodayValue < 5:
+                    $("#mapChart").html("Halte dich ran!");
+                    break;
+                case mapPointsValue < 100 && mapTodayValue == 5:
+                    $("#mapChart").html("Letzte Chance!");
+                    break;
+                case mapPointsValue >= 100:
+                    $("#mapChart").html("Starke Leistung!");
+                    break;
+            }
+            
+            /* Loading animation */
+            $(".mapLoadingfield").css("filter", "opacity(1)");
+            mapLoading = setInterval(function() {
+                clearInterval(mapLoading);
+                $("#mapContent").css("cursor", "auto");
+            }, 2200);
+        }
+    };
 </script>
 
-<div id="gesamteAnzeige" style="cursor:wait">
-  <br />
-  <h2 style="text-align: center">Deine Lernlandkarte in dieser Woche:</h2>
+<!-- H T M L - P A R T -->
+<!-- Cursor and Heading -->
+<br>
+<div id="mapContent" style="cursor:wait;">
+    <h2 class="mapLoadingfield" style="text-align: center; transition: all cubic-bezier(0.41, 0.71, 0.57, 1) 2s; filter: opacity(0.9)">Deine Lernlandkarte in dieser Woche:</h2>
 
-  <!-- HINTERGUND -->
-  <div
-    id="path"
-    style="
+<!-- BACKGROUND OF THE MAP -->
+    <div id="mapBackground" style="
   background-image: url(
-          
+  
 GROßGESCHRIEBENES ERSETZEN: BILDADRESSE FÜR DEN HINTERGRUND OHNE ANFÜHRUNGSZEICHEN
-          
+                                         
   );
   background-size: cover;
   background-position: right;
   padding: 0px;
   border: 3px solid #c5c1ae;
   border-radius: 20px;          
-  "
-  >
-    <!-- ABDECKUNG -->
-    <div
-      id="abdecken"
-      style="
+  ">
+
+<!-- COVER OF THE MAP -->
+        <div id="mapCover" style="
     background-image: linear-gradient(271deg, rgb(0 0 0 / 7%) 95%, rgb(255 243 220 / 31%) 100%, transparent 35%), url(
-            
+                                  
 GROßGESCHRIEBENES ERSETZEN: BILDADRESSE FÜR DIE ABDECKUNG OHNE ANFÜHRUNGSZEICHEN
-            
+                                  
     );
-    background-size: cover;
+    background-size: initial;
     background-repeat: no-repeat;
     width: 100%;
     height: 350px;
     margin-left: 0%;
-    border-radius: 0px 15px 15px 0px;
+    border-radius: 15px;
     overflow: hidden;
-    "
-    ></div>
-  </div>
-  <br />
-
-  <div
-    class="row"
-    style="margin: 0px!important; padding-left: 10px; padding-right: 10px"
-  >
-    <div class="col-sm-1" style="align-self: center; text-align: left;">
-      <h3>
-        <i
-          id="artefact"
-          class="fa"
-          style="border: 2px #bbae8d; border-style: dashed; border-radius: 100%; padding: 8px; background-color: #f7ffba;"
-        ></i>
-      </h3>
+    transition: all cubic-bezier(0.45, 0.71, 0.51, 1.22) 2s;  
+    "></div>
     </div>
-    <div class="col">
-      <h5 style="align-self: center; text-align: center">
-        <i
-          class="fa fa-star"
-          style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);"
-          >&nbsp;<span id="starSpn"></span></i
-        >&nbsp;&nbsp;|&nbsp;
-        <i
-          class="fa fa-leaf"
-          style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);"
-          >&nbsp;<span id="pointSpn"></span>/100</i
-        >&nbsp;&nbsp;|&nbsp;
-        <i
-          class="fa fa-map-pin"
-          style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);"
-          >&nbsp;&nbsp;Tag&nbsp;<span id="daySpn"></span></i
-        >&nbsp;&nbsp;|&nbsp;
-        <i
-          class="fa fa-fire"
-          style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);"
-          >&nbsp;Noch&nbsp;<span id="leftSpn"></span></i
-        >&nbsp;&nbsp;|&nbsp;
-        <i
-          class="fa fa-line-chart"
-          style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);"
-          >&nbsp;<span id="chartSpn"></span
-        ></i>
-      </h5>
+    <br>
+    
+<!-- Part under the map -->
+    <div class="row mapLoadingfield" style="margin: 0px!important; padding-left: 10px; padding-right: 10px; transition: all cubic-bezier(0.41, 0.71, 0.57, 1) 2s; filter: opacity(0.7)">
+        <div class="col-sm-1" style="align-self: center; text-align: left;">
+            <h3>
+                <i id="mapEmblem" class="fa" style="border: 2px #bbae8d; border-style: dashed; border-radius: 100%; padding: 8px; background-color: #f7ffba;"></i>
+            </h3>
+        </div>
+        <div class="col">
+            <h5 style="align-self: center; text-align: center">
+                <i class="fa fa-star" style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);">&nbsp;<span id="mapStars"></span></i>&nbsp;&nbsp;|&nbsp;
+                <i class="fa fa-leaf" style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);">&nbsp;<span id="mapPoints"></span>/100</i>&nbsp;&nbsp;|&nbsp;
+                <i class="fa fa-map-pin" style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);">&nbsp;&nbsp;Tag&nbsp;<span id="mapToday"></span></i>&nbsp;&nbsp;|&nbsp;
+                <i class="fa fa-fire" style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);">&nbsp;Noch&nbsp;<span id="mapLeftdays"></span></i>&nbsp;&nbsp;|&nbsp;
+                <i class="fa fa-line-chart" style="border: 2px solid #6c757d; padding: 10px; margin-top: 5px; margin-bottom: 5px; border-radius: 10px 0px; background-color: rgb(245 255 169 / 80%);">&nbsp;<span id="mapChart"></span></i>
+            </h5>
+        </div>
+        <div class="col-sm-1" style="align-self: center; text-align: right;">
+            <h3>
+                <a href="" onclick="javascript: window.location.href"><i class="fa fa-refresh" data-toggle="tooltip" title="" data-original-title="Neu laden"></i></a><br>
+            </h3>
+        </div>
     </div>
-    <div class="col-sm-1" style="align-self: center; text-align: right;">
-      <h3>
-        <a href="" onclick="javascript: window.location.href"
-          ><i
-            class="fa fa-refresh"
-            data-toggle="tooltip"
-            title=""
-            data-original-title="Neu laden"
-          ></i></a
-        ><br />
-      </h3>
-    </div>
-  </div>
 </div>
 
 <!-- Vor dem Speichern sollte unter dieser Zeile <p><br></p> stehen. -->
-<p><br /></p>
+<p><br></p>

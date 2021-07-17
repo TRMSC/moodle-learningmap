@@ -3,3 +3,5 @@ This is a code for showing an automated learningmap in moodle by using a textfie
 
 See the german description:
 https://trmsc1.wordpress.com/2021/06/20/lernlandkarten-in-moodle/
+
+An english description will come.

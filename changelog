@@ -10,3 +10,8 @@ v.1.1
 
 v.1.2
 - Notice at the end of the file for loading new pictures
+
+v.1.3
+- Loading animation (cover of the map, heading, area of the values)
+- Bug-fixes (rounded corners before loading)
+- Code-cleaning

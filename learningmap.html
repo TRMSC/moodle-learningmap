@@ -18,12 +18,15 @@
 
         function learningmap() {
             /* Get information from the checklist */
+            let checklistState = getChecklistState();
+            /*
             checklistFinish = parseFloat(
                 $(".checklist_progress_outer")
                 .css("width")
                 .replace("%", "")
                 .replace(",", ".")
             );
+            
             checklistProgress = Math.ceil(
                 parseFloat(
                     $(".checklist_progress_inner")
@@ -32,8 +35,10 @@
                     .replace(",", ".")
                 )
             );
+            */
             
             /* Use checklistRoundup to exclude a result of eg 99%; Change border-radius if progress > o */
+            /*
             var checklistRoundup = 0; 
             if (checklistProgress > 0) {
                 checklistRoundup = 0.5;
@@ -41,20 +46,25 @@
                     "border-radius": "0px 15px 15px 0px"
                 });
             }
+            */
             
             /* Calculate the state */
+            /*
             checklistState = Math.ceil(checklistRoundup + checklistProgress / (checklistFinish / 100));
             if (checklistState > 100) {
                 checklistState = 100;
             }
+            */
             
-            /* Cover the map depending on the state */
+            coverMap(checklistState);
+            /*
             $("#mapCover").css({
                 "margin-left": checklistState + "%"
             });
             $("#mapCover").css({
                 width: 100 - checklistState + "%"
-            }); 
+            });
+            */
             
             /* Points */
             let mapPointsValue = Math.round(checklistState);
@@ -102,7 +112,8 @@
             */
             
             /* Days */
-            let dow = getDow();
+            let dow = getDayOfWeek();
+            setLeftDays(dow);
             /*
             var mapDateValue = new Date();
             var mapTodayValue = mapDateValue.getDay();
@@ -150,6 +161,52 @@
         }
     };
     
+    /* Cover map */
+    function coverMap(chklistState){
+        /* Cover the map depending on the state */
+        $("#mapCover").css({
+            "margin-left": chklistState + "%"
+        });
+        $("#mapCover").css({
+            width: 100 - chklistState + "%"
+        }); 
+    }
+    
+	/* Checklist state */
+	function getChecklistState(){
+		/* Get information from the checklist */
+		let checklistFinish = parseFloat(
+			$(".checklist_progress_outer")
+			.css("width")
+			.replace("%", "")
+			.replace(",", ".")
+		);
+		let checklistProgress = Math.ceil(
+			parseFloat(
+				$(".checklist_progress_inner")
+				.css("width")
+				.replace("%", "")
+				.replace(",", ".")
+			)
+		);
+			
+		/* Use checklistRoundup to exclude a result of eg 99%; Change border-radius if progress > o */
+		var checklistRoundup = 0; 
+		if (checklistProgress > 0) {
+			checklistRoundup = 0.5;
+			$("#mapCover").css({
+				"border-radius": "0px 15px 15px 0px"
+			});
+		}
+			
+		/* Calculate the state */
+		let checklistState = Math.ceil(checklistRoundup + checklistProgress / (checklistFinish / 100));
+		if (checklistState > 100) {
+			checklistState = 100;
+		}
+		return checklistState;
+	}
+    
     /* Emblem */
     function getEmblem(mapPts){
         /* Better would be, check if mapPts is less than 0 or greater than 100, then raise an "error":
@@ -190,23 +247,28 @@
     }
     
     /* Days */
-    function getDOW(){
+    function getDayOfWeek(){
         var mapDateValue = new Date();
         var mapTodayValue = mapDateValue.getDay();
         if (mapTodayValue == 0) {
             mapTodayValue = 7;
         }
-        $("#mapToday").html(mapTodayValue);
-        if (mapTodayValue > 5) {
-            mapTodayValue = 5;
+        return mapTodayValue;
+    }
+    
+    function setLeftDays(today){
+        const DAYS_OF_WEEK = 5;
+        
+        $("#mapToday").html(today);
+        if (today > DAYS_OF_WEEK) {
+            today = DAYS_OF_WEEK;
         }
-        var mapLeftdaysValue = 5 - mapTodayValue;
+        var mapLeftdaysValue = DAYS_OF_WEEK - today;
         if (mapLeftdaysValue == 1) {
             $("#mapLeftdays").html(mapLeftdaysValue + " Tag");
         } else {
             $("#mapLeftdays").html(mapLeftdaysValue + " Tage");
         }
-        return mapTodayValue;
     }
     
     /* Chart */

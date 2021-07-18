@@ -5,9 +5,10 @@
 <!-- J A V A S C R I P T - P A R T -->
 <script>
     window.onload = function() {
+		/* Wouldn't there a setTimeout call be better? */
         jquery_load_check_interval = setInterval(function() {
             if (window.jQuery) {
-                learningmap();
+                loadLearningmap();
                 console.log("jquery successfully loaded...");
                 console.log($.fn.jquery);
                 clearInterval(jquery_load_check_interval);
@@ -16,130 +17,170 @@
             }
         }, 150);
 
-        function learningmap() {
-            /* Get information from the checklist */
-            checklistFinish = parseFloat(
-                $(".checklist_progress_outer")
-                .css("width")
-                .replace("%", "")
-                .replace(",", ".")
-            );
-            checklistProgress = Math.ceil(
-                parseFloat(
-                    $(".checklist_progress_inner")
-                    .css("width")
-                    .replace("%", "")
-                    .replace(",", ".")
-                )
-            );
+        function loadLearningmap() {
+			
+            let checklistState = getChecklistState();
             
-            /* Use checklistRoundup to exclude a result of eg 99%; Change border-radius if progress > o */
-            var checklistRoundup = 0; 
-            if (checklistProgress > 0) {
-                checklistRoundup = 0.5;
-                $("#mapCover").css({
-                    "border-radius": "0px 15px 15px 0px"
-                });
-            }
+            coverMap(checklistState);
             
-            /* Calculate the state */
-            checklistState = Math.ceil(checklistRoundup + checklistProgress / (checklistFinish / 100));
-            if (checklistState > 100) {
-                checklistState = 100;
-            }
-            
-            /* Cover the map depending on the state */
-            $("#mapCover").css({
-                "margin-left": checklistState + "%"
-            });
-            $("#mapCover").css({
-                width: 100 - checklistState + "%"
-            }); 
-            
-            /* Points */
             let mapPointsValue = Math.round(checklistState);
-            $("#mapPoints").html(mapPointsValue);
             
-            /* Emblem */
-            switch (true) {
-                case mapPointsValue >= 0 && mapPointsValue < 33:
-                    $("#mapEmblem").addClass("fa-compass");
-                    break;
-                case mapPointsValue >= 33 && mapPointsValue < 66:
-                    $("#mapEmblem").addClass("fa-flask");
-                    break;
-                case mapPointsValue >= 66 && mapPointsValue < 100:
-                    $("#mapEmblem").addClass("fa-magic");
-                    break;
-                case mapPointsValue == 100:
-                    $("#mapEmblem").addClass("fa-diamond");
-                    break;
-            }      
+			$("#mapPoints").html(mapPointsValue);
             
-            /* Stars */
-            switch (true) {
-                case mapPointsValue == 0:
-                    $("#mapStars").html("0");
-                    break;
-                case mapPointsValue > 0 && mapPointsValue < 25:
-                    $("#mapStars").html("1");
-                    break;
-                case mapPointsValue >= 25 && mapPointsValue < 50:
-                    $("#mapStars").html("2");
-                    break;
-                case mapPointsValue >= 50 && mapPointsValue < 75:
-                    $("#mapStars").html("3");
-                    break;
-                case mapPointsValue >= 75 && mapPointsValue < 100:
-                    $("#mapStars").html("4");
-                    break;
-                case mapPointsValue == 100:
-                    $("#mapStars").html("5");
-                    break;
-            }
+			setEmblem(mapPointsValue);
+			setMapStarValue(mapPointsValue);
             
-            /* Days */
-            var mapDateValue = new Date();
-            var mapTodayValue = mapDateValue.getDay();
-            if (mapTodayValue == 0) {
-                mapTodayValue = 7;
-            }
-            $("#mapToday").html(mapTodayValue);
-            if (mapTodayValue > 5) {
-                mapTodayValue = 5;
-            }
-            var mapLeftdaysValue = 5 - mapTodayValue;
-            if (mapLeftdaysValue == 1) {
-                $("#mapLeftdays").html(mapLeftdaysValue + " Tag");
-            } else {
-                $("#mapLeftdays").html(mapLeftdaysValue + " Tage");
-            }
-
-            /* Chart */
-            mapChartValue = mapPointsValue / mapTodayValue;
-            switch (true) {
-                case mapChartValue >= 20 && mapChartValue < 100:
-                    $("#mapChart").html("Weiter so!");
-                    break;
-                case mapChartValue < 20 && mapTodayValue < 5:
-                    $("#mapChart").html("Halte dich ran!");
-                    break;
-                case mapPointsValue < 100 && mapTodayValue == 5:
-                    $("#mapChart").html("Letzte Chance!");
-                    break;
-                case mapPointsValue >= 100:
-                    $("#mapChart").html("Starke Leistung!");
-                    break;
-            }
+            let dow = getDayOfWeek();
+            setLeftDays(dow);
+			setMotivationCall(mapPointsValue, dow);
             
-            /* Loading animation */
-            $(".mapLoadingfield").css("filter", "opacity(1)");
-            mapLoading = setInterval(function() {
-                clearInterval(mapLoading);
-                $("#mapContent").css("cursor", "auto");
-            }, 2200);
+			loadAnimation();
         }
     };
+    
+    /* Cover map */
+    function coverMap(chklistState){
+        /* Cover the map depending on the state */
+        $("#mapCover").css({
+            "margin-left": chklistState + "%"
+        });
+        $("#mapCover").css({
+            width: 100 - chklistState + "%"
+        }); 
+    }
+    
+	/* Checklist state */
+	function getChecklistState(){
+		/* Get information from the checklist */
+		let checklistFinish = parseFloat(
+			$(".checklist_progress_outer")
+			.css("width")
+			.replace("%", "")
+			.replace(",", ".")
+		);
+		let checklistProgress = Math.ceil(
+			parseFloat(
+				$(".checklist_progress_inner")
+				.css("width")
+				.replace("%", "")
+				.replace(",", ".")
+			)
+		);
+			
+		/* Use checklistRoundup to exclude a result of eg 99%; Change border-radius if progress > o */
+		var checklistRoundup = 0; 
+		if (checklistProgress > 0) {
+			checklistRoundup = 0.5;
+			$("#mapCover").css({
+				"border-radius": "0px 15px 15px 0px"
+			});
+		}
+			
+		/* Calculate the state */
+		let checklistState = Math.ceil(checklistRoundup + checklistProgress / (checklistFinish / 100));
+		if (checklistState > 100) {
+			checklistState = 100;
+		}
+		return checklistState;
+	}
+	
+    /* Emblem */
+    function setEmblem(mapPts){
+        /* Better would be, check if mapPts is less than 0 or greater than 100, then raise an "error":
+           if(mapPts < 0 || mapPts > 100) {
+                console.log("[ERR] Value out of range");
+                return "fa-question"
+           } else if ....
+		   
+		   => Error handling first
+        */ 
+		let emblem = "";
+        if(mapPts >= 0 && mapPts < 33) {
+            emblem = "fa-compass";
+        } else if(mapPts < 66){
+            emblem = "fa-flask";   
+        } else if(mapPts < 100) {
+            emblem = "fa-magic";  
+        } else if(mapPts == 100){
+            emblem = "fa-diamond";   
+        }
+		
+        $("#mapEmblem").addClass(emblem);
+    }
+    
+    /* Stars */
+    function setMapStarValue(mapPts){
+        let mapStar = "0";
+		
+		if(mapPts == 0){
+			
+        } else if(mapPts < 25) {
+            mapStar = "1";
+        } else if(mapPts < 50) {
+            mapStar = "2";   
+        } else if(mapPts < 75) {
+            mapStar = "3";   
+        } else if(mapPts < 100) {
+            mapStar = "4";
+        } else if(mapPts == 100) {
+            mapStar = "5";   
+        } else {
+            console.log("[ERR] Value out of range");
+        }
+        $("#mapStars").html(mapStarValue);
+    }
+    
+    /* Days */
+    function setDayOfWeek(){
+        var mapDateValue = new Date();
+        var mapTodayValue = mapDateValue.getDay();
+        if (mapTodayValue == 0) {
+            mapTodayValue = 7;
+        }
+        return mapTodayValue;
+    }
+    
+    function setLeftDays(today){
+        const DAYS_OF_WEEK = 5;
+        
+        $("#mapToday").html(today);
+        if (today > DAYS_OF_WEEK) {
+            today = DAYS_OF_WEEK;
+        }
+        var mapLeftdaysValue = DAYS_OF_WEEK - today;
+        if (mapLeftdaysValue == 1) {
+            $("#mapLeftdays").html(mapLeftdaysValue + " Tag");
+        } else {
+            $("#mapLeftdays").html(mapLeftdaysValue + " Tage");
+        }
+    }
+    
+    /* Chart */
+    function setMotivationCall(mapPts, today){
+        let mapChartValue = mapPts / today;
+		let mapChart = $("#mapChart").html();
+        if(mapChartValue >= 20 && mapChartValue < 100){
+            mapChart = "Weiter so!";
+        } else if(mapChartValue < 20 && today < 5){
+            mapChart = "Halte dich ran!";
+        } else if(mapPts < 100 && today == 5){
+            mapChart = "Letzte Chance!";
+        } else if(mapPts >= 100){
+            mapChart = "Starke Leistung!";
+        }
+		$("#mapChart").html(mapChart);
+    }
+	
+	function loadAnimation(){
+        /* Loading animation */
+        $(".mapLoadingfield").css("filter", "opacity(1)");
+		
+		/* Wouldn't there a setTimeout call be better? */
+        mapLoading = setInterval(function() {
+            clearInterval(mapLoading);
+           	$("#mapContent").css("cursor", "auto");
+    	}, 2200);
+	}
 </script>
 
 <!-- H T M L - P A R T -->

@@ -60,7 +60,8 @@
             let mapPointsValue = Math.round(checklistState);
             $("#mapPoints").html(mapPointsValue);
             
-            /* Emblem */
+            $("#mapEmblem").addClass(getEmblem(mapPointsValue));
+            /*
             switch (true) {
                 case mapPointsValue >= 0 && mapPointsValue < 33:
                     $("#mapEmblem").addClass("fa-compass");
@@ -75,8 +76,9 @@
                     $("#mapEmblem").addClass("fa-diamond");
                     break;
             }      
-            
-            /* Stars */
+            */
+            $("#mapStars").html(getMapStarValue(mapPointsValue));
+            /*
             switch (true) {
                 case mapPointsValue == 0:
                     $("#mapStars").html("0");
@@ -97,8 +99,11 @@
                     $("#mapStars").html("5");
                     break;
             }
+            */
             
             /* Days */
+            let dow = getDow();
+            /*
             var mapDateValue = new Date();
             var mapTodayValue = mapDateValue.getDay();
             if (mapTodayValue == 0) {
@@ -114,8 +119,11 @@
             } else {
                 $("#mapLeftdays").html(mapLeftdaysValue + " Tage");
             }
-
+            */
+            
             /* Chart */
+            $("#mapChart").html(getMotivationCall(mapPointsValue, dow);
+            /*
             mapChartValue = mapPointsValue / mapTodayValue;
             switch (true) {
                 case mapChartValue >= 20 && mapChartValue < 100:
@@ -131,6 +139,7 @@
                     $("#mapChart").html("Starke Leistung!");
                     break;
             }
+            */
             
             /* Loading animation */
             $(".mapLoadingfield").css("filter", "opacity(1)");
@@ -140,6 +149,81 @@
             }, 2200);
         }
     };
+    
+    /* Emblem */
+    function getEmblem(mapPts){
+        /* Better would be, check if mapPts is less than 0 or greater than 100, then raise an "error":
+           if(mapPts < 0 || mapPts > 100) {
+                console.log("[ERR] Value out of range");
+                return "fa-question"
+           } else if ....
+        */ 
+        if(mapPts >= 0 && mapPts < 33) {
+            return "fa-compass";
+        } else if(mapPts < 66){
+            return "fa-flask";   
+        } else if(mapPts < 100) {
+            return "fa-magic";  
+        } else if(mapPts == 100){
+            return "fa-diamond";   
+        }
+    }
+    
+    /* Stars */
+    function getMapStarValue(mapPts){
+        if(mapPts == 0){
+            return "0";
+        } else if(mapPts < 25) {
+            return "1";
+        } else if(mapPts < 50) {
+            return "2";   
+        } else if(mapPts < 75) {
+            return "3";   
+        } else if(mapPts < 100) {
+            return "4";
+        } else if(mapPts == 100) {
+            return "5";   
+        } else {
+            console.log("[ERR] Value out of range");
+            return "0";
+        }
+    }
+    
+    /* Days */
+    function getDOW(){
+        var mapDateValue = new Date();
+        var mapTodayValue = mapDateValue.getDay();
+        if (mapTodayValue == 0) {
+            mapTodayValue = 7;
+        }
+        $("#mapToday").html(mapTodayValue);
+        if (mapTodayValue > 5) {
+            mapTodayValue = 5;
+        }
+        var mapLeftdaysValue = 5 - mapTodayValue;
+        if (mapLeftdaysValue == 1) {
+            $("#mapLeftdays").html(mapLeftdaysValue + " Tag");
+        } else {
+            $("#mapLeftdays").html(mapLeftdaysValue + " Tage");
+        }
+        return mapTodayValue;
+    }
+    
+    /* Chart */
+    function getMotivationCall(mapPts, today){
+        let mapChartValue = mapPts / today;
+        if(mapChartValue >= 20 && mapChartValue < 100){
+            return "Weiter so!";
+        } else if(mapChartValue < 20 && today < 5){
+            return "Halte dich ran!";
+        } else if(mapPts < 100 && today == 5){
+            return "Letzte Chance!";
+        } else if(mapPts >= 100){
+            return "Starke Leistung!";
+        }
+        /* In case if not any of the above checks is true */
+        return $("#mapChart").html();
+    }
 </script>
 
 <!-- H T M L - P A R T -->
